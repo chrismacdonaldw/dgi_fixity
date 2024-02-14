@@ -110,6 +110,10 @@ function dgi_fixity_mail($key, &$message, $params) {
  * Implements hook_cron().
  */
 function dgi_fixity_cron() {
+  // To avoid expensive calls surrounding 
+  $account_switcher = \Drupal::service('account_switcher');
+  $account_switcher->switchTo(User::load(1));
+
   $queued = \Drupal::time()->getRequestTime();
   $settings = \Drupal::config(SettingsForm::CONFIG_NAME);
   $threshold = strtotime($settings->get(SettingsForm::THRESHOLD));
@@ -139,6 +143,8 @@ function dgi_fixity_cron() {
   if ($user) {
     \Drupal::service('plugin.manager.mail')->mail('dgi_fixity', 'notify', $user->getEmail(), $user->getPreferredLangcode(TRUE));
   }
+
+  $account_switcher->switchBack();
 }
 
 /**
